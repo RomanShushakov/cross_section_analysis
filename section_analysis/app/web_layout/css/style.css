@@ -1,0 +1,49 @@
+html,
+body {
+    height: 100%;
+}
+
+.sections-grid {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding-top: 20px;
+}
+
+
+
+.card {
+    margin-bottom: 10px;
+}
+
+.division {
+    padding: 15px;
+}
+
+
+.whole-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100%;
+}
+
+.footer {
+    height: 90px;
+    background-color: lightgrey;
+    padding-top: 25px;
+    
+}
+
+.heading-link {
+    color: black
+}
+
+.heading-link:hover {
+    text-decoration: none;
+    color: darkgray;
+}
+    
+.mesh_checking {
+    display: flex;
+}
