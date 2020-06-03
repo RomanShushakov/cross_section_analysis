@@ -7,159 +7,164 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <link rel="stylesheet" href="/web_layout/css/style.css">
   <title>Stresstable cross-section</title>
 </head>
 
 <body>
-<div class="whole-page">
-  <div class="not-footer">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><a class="navbar-brand" href="/">Stresstable</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span
-          class="navbar-toggler-icon"></span></button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-          <li class="nav-item active"><a class="nav-link" href="/sections">Section analysis <span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item"><a class="nav-link" href="#">Beam analysis</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Contacts</a></li>
-        </ul>
+  <div class="whole-page">
+    <div class="not-footer">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><a class="navbar-brand" href="/">Stresstable</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span
+            class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+            <li class="nav-item active"><a class="nav-link" href="/sections">Section analysis <span
+                  class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#">Beam analysis</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Contacts</a></li>
+          </ul>
+        </div>
+      </nav>
+      <div class="container"><img src="{{ image }}" class="img-fluid" alt="Responsive image">
+        <form class="needs-validation" novalidate method="post" action="{{ action }}">
+          <h3>Geometry:</h3>
+
+          {% for element in elements %}
+          <div class="form-group row">
+            <label for="validationCustom01" class="col-sm-6 col-form-label">{{ element.description }}</label>
+            <div class="col-sm-3">
+              <input type="number" min="0" step="{{ element.step }}" name="{{ element.name }}" class="form-control"
+                id="validationCustom01" required></div>
+          </div>
+          {% endfor %}
+
+          <div class="form-group row">
+            <label for="validationCustom07" class="col-sm-6 col-form-label">
+              mesh sizes (float) - A list of maximum finite element areas corresponding to each region within the
+              cross-section geometry.
+              (*** Since this parameter highly influences on computational time, so the demo version was limited by 1500
+              elements. ***)
+            </label>
+            <div class="col-sm-3">
+              <input type="number" min="0" step="any" name="mesh_sizes" class="form-control" id="validationCustom07"
+                required></div>
+          </div>
+          <div class="mesh_checking">
+            <div class="col-sm-3"><a href="#" class="btn btn-secondary" id="check_mesh">Check mesh</a></div>
+            <div class="col-sm-6">
+              <p id="msg"></p>
+            </div>
+          </div>
+          <h3>Loads:</h3>
+          <div class="form-group row">
+            <label for="validationCustom08" class="col-sm-6 col-form-label">N (float) - Axial force</label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="N" class="form-control" id="validationCustom08" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="validationCustom09" class="col-sm-6 col-form-label">Vx (float) - Shear force acting in the
+              x-direction</label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="Vx" class="form-control" id="validationCustom09" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="validationCustom10" class="col-sm-6 col-form-label">Vy (float) - Shear force acting in the
+              y-direction</label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="Vy" class="form-control" id="validationCustom10" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="validationCustom11" class="col-sm-6 col-form-label">Mxx (float) - Bending moment about the
+              centroidal xx-axis</label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="Mxx" class="form-control" id="validationCustom11" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="validationCustom12" class="col-sm-6 col-form-label">Myy (float) - Bending moment about the
+              centroidal yy-axis </label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="Myy" class="form-control" id="validationCustom12" placeholder="0">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="validationCustom13" class="col-sm-6 col-form-label">Mzz (float) - Torsion moment about the
+              centroidal zz-axis</label>
+            <div class="col-sm-3">
+              <input type="number" step="any" name="Mzz" class="form-control" id="validationCustom13" placeholder="0">
+            </div>
+          </div>
+          <input type="hidden" id="section_type" name="section_type" value="{{ section_type }}">
+          <p>
+            (*** To obtain correct section analysis results please ensure that all entered values (dimensions, forces,
+            moments etc.)
+            using a consistent set of units. ***)
+          </p>
+          <button class="btn btn-secondary" type="submit">Analyze</button>
+          <button class="btn btn-secondary" type="reset">Reset</button>
+        </form>
       </div>
-    </nav>
-    <div class="container"><img src="{{ image }}" class="img-fluid" alt="Responsive image">
-      <form class="needs-validation" novalidate method="post" action="{{ action }}">
-        <h3>Geometry:</h3>
-
-        {% for element in elements %}
-        <div class="form-group row">
-          <label for="validationCustom01" class="col-sm-6 col-form-label">{{ element.description }}</label>
-          <div class="col-sm-3">
-            <input type="number" min="0" step="{{ element.step }}" name="{{ element.name }}" class="form-control"
-                   id="validationCustom01" required></div>
-        </div>
-        {% endfor %}
-
-        <div class="form-group row">
-          <label for="validationCustom07" class="col-sm-6 col-form-label">
-            mesh sizes (float) - A list of maximum finite element areas corresponding to each region within the
-            cross-section geometry.
-            (*** Since this parameter highly influences on computational time, so the demo version was limited by 1500 elements. ***)
-          </label>
-          <div class="col-sm-3">
-            <input type="number" min="0" step="any" name="mesh_sizes" class="form-control" id="validationCustom07" required></div>
-        </div>
-        <div class="mesh_checking">
-         <div class="col-sm-3"><a href="#" class="btn btn-secondary" id="check_mesh">Check mesh</a></div>
-          <div class="col-sm-6">
-            <p id="msg"></p>
-          </div>
-        </div>
-        <h3>Loads:</h3>
-        <div class="form-group row">
-          <label for="validationCustom08" class="col-sm-6 col-form-label">N (float) - Axial force</label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="N" class="form-control" id="validationCustom08" placeholder="0"></div>
-        </div>
-        <div class="form-group row">
-          <label for="validationCustom09" class="col-sm-6 col-form-label">Vx (float) - Shear force acting in the
-            x-direction</label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="Vx" class="form-control" id="validationCustom09" placeholder="0">
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="validationCustom10" class="col-sm-6 col-form-label">Vy (float) - Shear force acting in the
-            y-direction</label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="Vy" class="form-control" id="validationCustom10" placeholder="0">
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="validationCustom11" class="col-sm-6 col-form-label">Mxx (float) - Bending moment about the
-            centroidal xx-axis</label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="Mxx" class="form-control" id="validationCustom11" placeholder="0">
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="validationCustom12" class="col-sm-6 col-form-label">Myy (float) - Bending moment about the
-            centroidal yy-axis </label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="Myy" class="form-control" id="validationCustom12" placeholder="0">
-          </div>
-        </div>
-        <div class="form-group row">
-          <label for="validationCustom13" class="col-sm-6 col-form-label">Mzz (float) - Torsion moment about the
-            centroidal zz-axis</label>
-          <div class="col-sm-3">
-            <input type="number" step="any" name="Mzz" class="form-control" id="validationCustom13" placeholder="0">
-          </div>
-        </div>
-        <input type="hidden" id="section_type" name="section_type" value="{{ section_type }}">
-        <p>
-          (*** To obtain correct section analysis results please ensure that all entered values (dimensions, forces, moments etc.)
-          using a consistent set of units. ***)
-        </p>
-        <button class="btn btn-secondary" type="submit">Analyze</button>
-        <button class="btn btn-secondary" type="reset">Reset</button>
-      </form>
+    </div>
+    <div class="footer">
+      <p class="text-justify">&copy 2020 Stresstable tools. All rights reserved</p>
     </div>
   </div>
-  <div class="footer">
-    <p class="text-justify">&copy 2020 Stresstable tools. All rights reserved</p>
-  </div>
-</div>
-<!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-        crossorigin="anonymous"></script>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+    crossorigin="anonymous"></script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 
 <script>
-        // Example starter JavaScript for disabling form submissions if there are invalid fields
-        (function () {
-            'use strict';
-            window.addEventListener('load', function () {
-                // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                var forms = document.getElementsByClassName('needs-validation');
-                // Loop over them and prevent submission
-                var validation = Array.prototype.filter.call(forms, function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
+  // Example starter JavaScript for disabling form submissions if there are invalid fields
+  (function () {
+    'use strict';
+    window.addEventListener('load', function () {
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.getElementsByClassName('needs-validation');
+      // Loop over them and prevent submission
+      var validation = Array.prototype.filter.call(forms, function (form) {
+        form.addEventListener('submit', function (event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
 </script>
 <script type="text/javascript">
-        $(document).ready(function () {
-            $('a#check_mesh').bind('click', function () {
-                $.ajax({
-                    type: "POST",
-                    url: "/analysis_results/checking",
-                    data: $("form").serialize(),
-                    success: function (data) { $("#msg").text(data.msg); },
-                    dataType: "json"
-                });
-            return false;
-            });
-        });
+  $(document).ready(function () {
+    $('a#check_mesh').bind('click', function () {
+      $.ajax({
+        type: "POST",
+        url: "/analysis_results/checking",
+        data: $("form").serialize(),
+        success: function (data) { $("#msg").text(data.msg); },
+        dataType: "json"
+      });
+      return false;
+    });
+  });
 </script>
 
 </html>
