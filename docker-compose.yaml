@@ -8,10 +8,24 @@ volumes:
 services:
   mongodb:
     image: 'mongo:4.2.6'
+    container_name: mongo_sa_container
     networks:
       - app_net
+    restart: always
     volumes:
       - mongodb_volume:/data/db
+  mongo-express:
+    image: mongo-express:0.54.0
+    container_name: mongo-express
+    networks:
+      - app_net
+    restart: always
+    ports:
+      - 8081:8081
+    depends_on: 
+      - mongodb
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo_sa_container
   section_analysis:
     build: section_analysis
     command: uvicorn app.app:app --reload --host 0.0.0.0 --port 80
