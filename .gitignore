@@ -1,2 +1,8 @@
 /venv/
 .vscode/settings.json
+section_analysis/app/__pycache__/__init__.cpython-37.pyc
+section_analysis/app/__pycache__/app.cpython-37.pyc
+section_analysis/app/__pycache__/database.cpython-37.pyc
+section_analysis/app/__pycache__/image_drawing.cpython-37.pyc
+section_analysis/app/__pycache__/section_analysis.cpython-37.pyc
+section_analysis/app/__pycache__/settings.cpython-37.pyc

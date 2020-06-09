@@ -59,8 +59,7 @@ async def compose_prep(request: Request, section_type: str):
         image, elements = current_common_section[0]['image'], current_common_section[0]['elements']
     else:
         raise HTTPException(status_code=404, detail="Item not found")
-    # return templates.TemplateResponse("_prep.html", {"request": request, 'section_type': section_type,
-    #                                                  'action': PREP_ACTION, 'image': image, 'elements': elements})
+
     return templates.TemplateResponse("cross-section-page.html", {"request": request, 'section_type': section_type,
                                                                   'action': PREP_ACTION, 'image': image,
                                                                   'elements': elements})
@@ -95,7 +94,7 @@ async def analyze_section(
     else:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    section_analysis_results = database.get_data(analyzed_section_base_name=analyzed_section_base_name)
+    section_analysis_results = await database.get_data(analyzed_section_base_name=analyzed_section_base_name)
     if section_analysis_results:
         if step == 'checking':
             return {'msg': MESH_CHECK_PASSED_MSG}
@@ -114,7 +113,7 @@ async def analyze_section(
         elastic_centroid, centroidal_shear_center = analyzing_function(step=step, N=1, Vx=1, Vy=1, Mxx=1, Myy=1, Mzz=1,
                                                                        **all_analysis_parameters)
         if mesh_check_passed and step == 'analysis':
-            database.save_data(
+            await database.save_data(
                 section={'analyzed_section_base_name': analyzed_section_base_name,
                          'nodes': Binary(pickle.dumps(nodes, protocol=2)),
                          'unit_stresses': Binary(pickle.dumps(unit_stresses, protocol=2)),
@@ -129,7 +128,8 @@ async def analyze_section(
             if step == 'checking':
                 return {'msg': MESH_CHECK_NOT_PASSED_MSG}
             else:
-                return templates.TemplateResponse("mesh_check_not_passed.html", {"request": request, 'msg': MESH_CHECK_NOT_PASSED_MSG})
+                return templates.TemplateResponse("mesh_check_not_passed.html", {"request": request,
+                                                                                 'msg': MESH_CHECK_NOT_PASSED_MSG})
 
     return templates.TemplateResponse(
         "results.html", {"request": request, 'area': f'{area:.2f}', 'ixx_c': f'{ixx_c:.2f}',
@@ -146,9 +146,9 @@ async def analyze_section(
 @app.get("/draw_image/{analyzed_section_base_name}/{stress_name}/{stress_description}/{N}/{Vx}/{Vy}/{Mxx}/{Myy}/{Mzz}")
 async def draw_image(analyzed_section_base_name: str, stress_name: str, stress_description: str,
                      N: float, Vx: float, Vy: float, Mxx: float, Myy: float, Mzz: float):
-    nodes = pickle.loads(database.get_data(analyzed_section_base_name=analyzed_section_base_name)['nodes'])
-    unit_stresses = pickle.loads(
-        database.get_data(analyzed_section_base_name=analyzed_section_base_name)['unit_stresses'])
+    section_data = await database.get_data(analyzed_section_base_name=analyzed_section_base_name)
+    nodes = pickle.loads(section_data['nodes'])
+    unit_stresses = pickle.loads(section_data['unit_stresses'])
 
     x_coords = [node[0] for node in nodes]
     y_coords = [node[1] for node in nodes]

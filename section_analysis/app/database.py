@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-from pymongo import MongoClient, ASCENDING
+from pymongo import ASCENDING
+import motor.motor_asyncio
 
 MONGO_DB_ADDR = os.getenv('MONGO_DB_ADDR', 'localhost')
 
@@ -19,12 +20,12 @@ class MongodbService(object):
         return cls._instance
 
     def __init__(self):
-        self._client = MongoClient(MONGO_DB_ADDR, 27017)
+        self._client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DB_ADDR, 27017)
         self._db = self._client.section_analysis
         self._db.sections.create_index([('expired_at', ASCENDING)], expireAfterSeconds=0)
 
-    def get_data(self, analyzed_section_base_name):
-        return self._db.sections.find_one({'analyzed_section_base_name': analyzed_section_base_name})
+    async def get_data(self, analyzed_section_base_name):
+        return await self._db.sections.find_one({'analyzed_section_base_name': analyzed_section_base_name})
 
-    def save_data(self, section):
-        self._db.sections.insert_one(section)
+    async def save_data(self, section):
+        await self._db.sections.insert_one(section)
