@@ -5,7 +5,8 @@ import datetime
 
 import app.section_analysis as sa
 import app.image_drawing as im_draw
-from app.database import MongodbService
+# from app.database import MongodbService
+from app.database import get_data, save_data
 from app.settings import LIFETIME, DEFAULT_OUTPUT_STRESSES, COMMON_STRUCTURAL_SECTIONS
 
 from fastapi import FastAPI, Request, Form, HTTPException
@@ -14,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 
 import pickle
-from bson.binary import Binary
+# from bson.binary import Binary
 
 from typing import Optional
 
@@ -32,7 +33,7 @@ app.mount("/web_layout", StaticFiles(directory=WEB_LAYOUT_DIR), name="web_layout
 
 templates = Jinja2Templates(directory=WEB_LAYOUT_DIR)
 
-database = MongodbService.get_instance()
+# database = MongodbService.get_instance()
 
 
 @app.get("/")
@@ -93,8 +94,8 @@ async def analyze_section(
         analyzing_function = getattr(sa, current_common_section[0]['analyzing_function'])
     else:
         raise HTTPException(status_code=404, detail="Item not found")
-
-    section_analysis_results = await database.get_data(analyzed_section_base_name=analyzed_section_base_name)
+    
+    section_analysis_results = await get_data(analyzed_section_base_name=analyzed_section_base_name)
     if section_analysis_results:
         if step == 'checking':
             return {'msg': MESH_CHECK_PASSED_MSG}
@@ -105,21 +106,27 @@ async def analyze_section(
         ixy_c = section_analysis_results['ixy_c']
         torsion_constant = section_analysis_results['torsion_constant']
         warping_constant = section_analysis_results['warping_constant']
-        elastic_centroid = section_analysis_results['elastic_centroid']
-        centroidal_shear_center = section_analysis_results['centroidal_shear_center']
+        # elastic_centroid = section_analysis_results['elastic_centroid']
+        # centroidal_shear_center = section_analysis_results['centroidal_shear_center']
+        elastic_centroid = pickle.loads(section_analysis_results['elastic_centroid'])
+        centroidal_shear_center = pickle.loads(section_analysis_results['centroidal_shear_center'])
 
     else:
         mesh_check_passed, nodes, unit_stresses, area, ixx_c, iyy_c, ixy_c, torsion_constant, warping_constant, \
         elastic_centroid, centroidal_shear_center = analyzing_function(step=step, N=1, Vx=1, Vy=1, Mxx=1, Myy=1, Mzz=1,
                                                                        **all_analysis_parameters)
         if mesh_check_passed and step == 'analysis':
-            await database.save_data(
+            await save_data(
                 section={'analyzed_section_base_name': analyzed_section_base_name,
-                         'nodes': Binary(pickle.dumps(nodes, protocol=2)),
-                         'unit_stresses': Binary(pickle.dumps(unit_stresses, protocol=2)),
+                        #  'nodes': Binary(pickle.dumps(nodes, protocol=2)),
+                        #  'unit_stresses': Binary(pickle.dumps(unit_stresses, protocol=2)),
+                         'nodes': pickle.dumps(nodes),
+                         'unit_stresses': pickle.dumps(unit_stresses),
                          'area': area, 'ixx_c': ixx_c, 'iyy_c': iyy_c, 'ixy_c': ixy_c,
                          'torsion_constant': torsion_constant, 'warping_constant': warping_constant,
-                         'elastic_centroid': elastic_centroid, 'centroidal_shear_center': centroidal_shear_center,
+                        #  'elastic_centroid': elastic_centroid, 'centroidal_shear_center': centroidal_shear_center,
+                         'elastic_centroid': pickle.dumps(elastic_centroid),
+                         'centroidal_shear_center': pickle.dumps(centroidal_shear_center),
                          'expired_at': datetime.datetime.utcnow() + datetime.timedelta(seconds=LIFETIME)})
         elif mesh_check_passed and step == 'checking':
             return {'msg': MESH_CHECK_PASSED_MSG}
@@ -146,7 +153,7 @@ async def analyze_section(
 @app.get("/draw_image/{analyzed_section_base_name}/{stress_name}/{stress_description}/{N}/{Vx}/{Vy}/{Mxx}/{Myy}/{Mzz}")
 async def draw_image(analyzed_section_base_name: str, stress_name: str, stress_description: str,
                      N: float, Vx: float, Vy: float, Mxx: float, Myy: float, Mzz: float):
-    section_data = await database.get_data(analyzed_section_base_name=analyzed_section_base_name)
+    section_data = await get_data(analyzed_section_base_name=analyzed_section_base_name)
     nodes = pickle.loads(section_data['nodes'])
     unit_stresses = pickle.loads(section_data['unit_stresses'])
 

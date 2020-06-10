@@ -1,31 +1,73 @@
 version: '3.7'
 
+# networks:
+#   app_net:
+#     driver: bridge
+# volumes:
+#   mongodb_volume:
+# services:
+#   mongodb:
+#     image: mongo:4.2.6
+#     container_name: mongo_sa_container
+#     networks:
+#       - app_net
+#     restart: always
+#     volumes:
+#       - mongodb_volume:/data/db
+#   mongo-express:
+#     image: mongo-express:0.54.0
+#     container_name: mongo-express
+#     networks:
+#       - app_net
+#     restart: always
+#     ports:
+#       - 8081:8081
+#     depends_on: 
+#       - mongodb
+#     environment:
+#       - ME_CONFIG_MONGODB_SERVER=mongo_sa_container
+#       - ME_CONFIG_BASICAUTH_USERNAME=admin
+#       - ME_CONFIG_BASICAUTH_PASSWORD=pass
+#   section_analysis:
+#     build: section_analysis
+#     command: uvicorn app.app:app --reload --host 0.0.0.0 --port 80
+#     networks:
+#       - app_net
+#     ports:
+#       - 80:80
+#     environment:
+#       MONGO_DB_ADDR: mongodb
+
 networks:
   app_net:
     driver: bridge
+
 volumes:
-  mongodb_volume:
+  postgres_db_volume:
+
 services:
-  mongodb:
-    image: 'mongo:4.2.6'
-    container_name: mongo_sa_container
+  postgres_db:
+    image: postgres:12.3
+    container_name: postgres_db
     networks:
       - app_net
     restart: always
     volumes:
-      - mongodb_volume:/data/db
-  mongo-express:
-    image: mongo-express:0.54.0
-    container_name: mongo-express
+      - postgres_db_volume:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: pass_test
+      POSTGRES_USER: user_test 
+      POSTGRES_DB: db_test
+
+  adminer:
+    image: adminer:4.7.7
+    container_name: adminer
     networks:
       - app_net
     restart: always
     ports:
-      - 8081:8081
-    depends_on: 
-      - mongodb
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo_sa_container
+      - 8080:8080
+
   section_analysis:
     build: section_analysis
     command: uvicorn app.app:app --reload --host 0.0.0.0 --port 80
@@ -34,4 +76,4 @@ services:
     ports:
       - 80:80
     environment:
-      MONGO_DB_ADDR: mongodb
+      POSTGRES_DB_ADDR: postgres_db
