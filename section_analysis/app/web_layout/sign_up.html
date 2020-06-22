@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="/web_layout/css/style.css">
+  <title>Stresstable</title>
+</head>
+
+<body>
+  <div class="whole-page">
+    <div class="not-footer">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark"><a class="navbar-brand" href="/">Stresstable</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span
+            class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item active"><a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="/sections">Section analysis</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Beam analysis</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Contacts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/web_layout/sign_up.html">Sign Up</a></li>
+            <li class="nav-item"><a class="nav-link" href="/web_layout/sign_in.html">Sign In</a></li>
+            <li class="nav-item"><a id="current_user" class="nav-link" href="#"></a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <div id="registration_form">
+        <h2>Registration form</h2>
+        <div>
+          <input id="full_name" placeholder="full name" required="True">
+          <input id="email" placeholder="email">
+          <input id="username" placeholder="username">
+          <input id="password" placeholder="password">
+        </div>
+        <button id="register_button">Register</button>
+      </div>
+    
+      <p id="response_text"></p>
+    
+      <p id="signin_button_location"></p>
+    
+    </div>
+    <div class="footer">
+      <p class="text-justify">&copy 2020 Stresstable tools. All rights reserved</p>
+    </div>
+  </div>
+
+  <script src="/web_layout/js/signup_and_signin_guest.js"></script>
+  <script src="/web_layout/js/signup_user.js">
+   /* "use strict";
+
+    const fullname = document.getElementById("full_name");
+    const email = document.getElementById("email");
+    const username = document.getElementById("username");
+    const password = document.getElementById("password");
+    const button = document.getElementById("register_button");
+
+    const signin_button = "<button><a href='/web_layout/signin.html' type='submit'>sign in</a></button>"
+
+    const response_text = document.getElementById("response_text");
+
+    button.addEventListener('click', function () {
+      const user_data = {
+        "full_name": full_name.value,
+        "email": email.value,
+        "username": username.value,
+        "password": password.value
+      }
+
+      if (!check(user_data)) {
+        return false;
+      }
+      else {
+        register_user(user_data);
+
+        fullname.value = "";
+        email.value = "";
+        username.value = "";
+        password.value = "";
+      }
+    });
+
+    function register_user(user_data) {
+      const url = "/auth/create_user";
+      const my_settings = {
+        method: 'POST',
+        body: JSON.stringify(user_data)
+      };
+      fetch(url, my_settings)
+        .then(function (response) {
+          if (response.ok) {
+            return response.text()
+              .then(function (text) {
+                document.getElementById("registration_form").innerHTML = "";
+                response_text.textContent = text;
+                document.getElementById("signin_button_location").innerHTML = signin_button;
+              });
+          }
+          else {
+            return response.json()
+              .then(function (json) {
+                // throw Error(json["detail"]);
+                response_text.textContent = json["detail"];
+              });
+          }
+        });
+       .catch(function(err) {
+        console.log(err);
+        response_text.textContent = err;
+      }); 
+    };
+
+    function check_email(email) {
+      const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    function check(user_data) {
+      let elem = null;
+      for (elem in user_data) {
+        if (user_data[elem] == null || user_data[elem] == "") {
+          alert("Please Fill All Required Field");
+          return false;
+        }
+      }
+      if (!check_email(user_data.email)) {
+        alert("You have entered an invalid email address");
+        return false;
+      }
+      return true;
+    } 
+    */
+  </script>
+</body>
+
+</html>

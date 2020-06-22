@@ -1,18 +1,24 @@
 # -*- coding:utf-8 -*-
 
 import os
-import datetime
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
+import jwt
+from jwt import PyJWTError
+from pydantic import BaseModel
 
 import app.section_analysis as sa
 import app.image_drawing as im_draw
 # from app.database import MongodbService
 from app.database import get_data, save_data
 from app.settings import LIFETIME, DEFAULT_OUTPUT_STRESSES, COMMON_STRUCTURAL_SECTIONS
+from app.users_database import extract_users_from_db, add_user_into_db
 
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException,  Depends, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 import pickle
 # from bson.binary import Binary
@@ -27,6 +33,13 @@ PREP_ACTION = '/analysis_results/analysis'
 MESH_CHECK_PASSED_MSG = 'mesh is ok.'
 MESH_CHECK_NOT_PASSED_MSG = 'Too many elements. Please increase mesh sizes or decrease cross-section dimensions.'
 
+# to get a string like this run:
+# openssl rand -hex 32
+SECRET_KEY = "9595b0b0117f573c984b647c8760d1b041f36b4187101b4eb3767cfde8a43d32"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
 app = FastAPI()
 
 app.mount("/web_layout", StaticFiles(directory=WEB_LAYOUT_DIR), name="web_layout")
@@ -36,9 +49,126 @@ templates = Jinja2Templates(directory=WEB_LAYOUT_DIR)
 # database = MongodbService.get_instance()
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str = None
+
+
+class User(BaseModel):
+    full_name: str
+    email: str
+    username: str
+    disabled: bool = False
+    is_superuser: bool = False
+
+
+class UserInCreation(User):
+    password: str
+
+
+class UserInDB(User):
+    hashed_password: str
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_user(db_extraction, username: str):
+    if username in db_extraction:
+        user_dict = db_extraction[username]
+        return UserInDB(**user_dict)
+
+
+def authenticate_user(db_extraction, username: str, password: str):
+    user = get_user(db_extraction, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except PyJWTError:
+        raise credentials_exception
+    all_users = await extract_users_from_db()
+    user = get_user(all_users, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+
 @app.get("/")
 async def choose_analysis(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.post("/auth/create_user")
+async def create_user(user: UserInCreation, request: Request):
+    return await add_user_into_db(user=user)
+
+
+@app.post("/auth/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    all_users = await extract_users_from_db()
+    user = authenticate_user(all_users, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get("/users/current_username")
+async def read_users_me(request: Request, current_user: User = Depends(get_current_active_user)):
+    return {"username": current_user.username}
+
+
+@app.get("/users/sign_in")
+async def read_users_me(request: Request, current_user: User = Depends(get_current_active_user)):
+    return templates.TemplateResponse("index.html", {"request": request, "username": current_user.username})
 
 
 @app.get("/sections")
@@ -127,7 +257,7 @@ async def analyze_section(
                         #  'elastic_centroid': elastic_centroid, 'centroidal_shear_center': centroidal_shear_center,
                          'elastic_centroid': pickle.dumps(elastic_centroid),
                          'centroidal_shear_center': pickle.dumps(centroidal_shear_center),
-                         'expired_at': datetime.datetime.utcnow() + datetime.timedelta(seconds=LIFETIME)})
+                         'expired_at': datetime.utcnow() + timedelta(seconds=LIFETIME)})
         elif mesh_check_passed and step == 'checking':
             return {'msg': MESH_CHECK_PASSED_MSG}
 

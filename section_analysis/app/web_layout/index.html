@@ -26,6 +26,13 @@
             <li class="nav-item"><a class="nav-link" href="/sections">Section analysis</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Beam analysis</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Contacts</a></li>
+            <li class="nav-item"><a class="nav-link" href="/web_layout/sign_up.html">Sign Up</a></li>
+            <li class="nav-item"><a class="nav-link" href="/web_layout/sign_in.html">Sign In</a></li>
+            {% if username %}
+              <li class="nav-item"><a id="current_user" class="nav-link" href="#">{{ username }}</a></li>
+            {% else %}
+              <li class="nav-item"><a id="current_user" class="nav-link" href="#"></a></li>
+            {% endif %}
           </ul>
         </div>
       </nav>
@@ -62,6 +69,80 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
     integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
     crossorigin="anonymous"></script>
+  <script src=/web_layout/js/signup_and_signin_guest.js>
+   /* "use strict";
+
+    const full_name = "Guest";
+    const email = "guest@guest.com";
+    const username = "Guest";
+    const password = "Guest";
+
+    const guest_data_signup = {
+      "full_name": full_name,
+      "email": email,
+      "username": username,
+      "password": password
+    }
+
+    const guest_data_signin = new FormData();
+    guest_data_signin.append("username", username);
+    guest_data_signin.append("password", password);
+
+    const current_user = document.getElementById("current_user");
+
+    window.onload = function () {
+      const token = localStorage.getItem("Authorization");
+      if (!token || token == "Bearer undefined") {
+        signup_and_signin_guest(guest_data_signup);
+        current_user.textContent = username;
+      }
+      else {
+        get_current_username(current_user);
+      }
+    };
+
+
+    function signup_and_signin_guest(guest_data_signup) {
+      const signup_url = "/auth/create_user";
+      const my_signup_settings = {
+        method: 'POST',
+        body: JSON.stringify(guest_data_signup)
+      };
+      fetch(signup_url, my_signup_settings);
+
+      const signin_url = "/auth/token";
+      const my_signin_settings = {
+        method: 'POST',
+        body: guest_data_signin
+      };
+      fetch(signin_url, my_signin_settings)
+        .then(function (response) {
+          response.text()
+            .then(function (text) {
+              localStorage.setItem("Authorization", "Bearer " + JSON.parse(text)["access_token"]);
+            });
+        });
+    };
+
+
+    function get_current_username(current_user) {
+      const my_headers = new Headers();
+      my_headers.append("Authorization", localStorage.getItem("Authorization"));
+      const url = "/users/current_username";
+      const my_settings = {
+        method: "GET",
+        headers: my_headers,
+      };
+      fetch(url, my_settings)
+        .then(function (response) {
+          response.text()
+            .then(function (text) {
+              current_user.textContent = JSON.parse(text)["username"];
+            });
+        });
+    }
+*/
+  </script>
 </body>
 
 </html>
